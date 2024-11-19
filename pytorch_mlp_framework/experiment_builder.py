@@ -152,7 +152,7 @@ class ExperimentBuilder(nn.Module):
         #TODO write your code here
         for n, p in named_parameters:
             if p.grad is not None:  # Only consider parameters that require gradients
-                grad_mean = p.grad.abs().mean().item()  # Compute absolute mean of the gradient
+                grad_mean = p.grad.mean().item()  # Compute absolute mean of the gradient
                 all_grads.append(grad_mean)
                 layers.append(n)
         ########################################
