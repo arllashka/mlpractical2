@@ -152,9 +152,10 @@ class ExperimentBuilder(nn.Module):
         #TODO write your code here
         for n, p in named_parameters:
             if p.requires_grad and p.grad is not None:
-                grad_mean = p.grad.abs().mean().item()
-                all_grads.append(grad_mean)
-                layers.append(n)
+                if "bias" not in n:
+                    grad_mean = p.grad.abs().mean().item()
+                    all_grads.append(grad_mean)
+                    layers.append(n)
         ########################################
             
         
@@ -296,6 +297,7 @@ class ExperimentBuilder(nn.Module):
             ##### Plot Gradient Flow at each Epoch during Training  ######
             print("Generating Gradient Flow Plot at epoch {}".format(epoch_idx))
             plt = self.plot_grad_flow(self.model.named_parameters())
+            plt.show()
             if not os.path.exists(os.path.join(self.experiment_saved_models, 'gradient_flow_plots')):
                 os.mkdir(os.path.join(self.experiment_saved_models, 'gradient_flow_plots'))
                 # plt.legend(loc="best")
