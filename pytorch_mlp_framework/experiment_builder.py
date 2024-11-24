@@ -155,7 +155,8 @@ class ExperimentBuilder(nn.Module):
                 if "bias" not in n:
                     grad_mean = p.grad.abs().mean().item()
                     all_grads.append(grad_mean)
-                    layers.append(n)
+                    clean_name = n.replace("layer_dict.", "").replace(".weight", "")
+                    layers.append(clean_name)
         ########################################
             
         
@@ -298,6 +299,7 @@ class ExperimentBuilder(nn.Module):
             print("Generating Gradient Flow Plot at epoch {}".format(epoch_idx))
             plt = self.plot_grad_flow(self.model.named_parameters())
             plt.show()
+            self.load_and_plot_grad_flow()
             if not os.path.exists(os.path.join(self.experiment_saved_models, 'gradient_flow_plots')):
                 os.mkdir(os.path.join(self.experiment_saved_models, 'gradient_flow_plots'))
                 # plt.legend(loc="best")
@@ -326,3 +328,31 @@ class ExperimentBuilder(nn.Module):
                         stats_dict=test_losses, current_epoch=0, continue_from_mode=False)
 
         return total_losses, test_losses
+    
+    def load_and_plot_grad_flow(self):
+        """
+        Loads the latest model and plots the gradient flow.
+        """
+        # Load the latest model
+        print("Loading the latest model for gradient flow plotting...")
+        self.load_model(
+            model_save_dir=self.experiment_saved_models,
+            model_idx='latest',  # Load the latest model
+            model_save_name="train_model"
+        )
+        
+        # Check if the gradient flow plotting function exists
+        if hasattr(self, 'plot_grad_flow') and callable(self.plot_grad_flow):
+            print("Plotting Gradient Flow...")
+            plt = self.plot_grad_flow(self.model.named_parameters())
+            plt.show()  # Display the plot
+
+            # Save the plot
+            grad_flow_dir = os.path.join(self.experiment_saved_models, 'gradient_flow_plots')
+            if not os.path.exists(grad_flow_dir):
+                os.mkdir(grad_flow_dir)
+
+            plt.savefig(os.path.join(grad_flow_dir, "latest_model_gradient_flow.pdf"))
+            print(f"Gradient flow plot saved at {grad_flow_dir}/latest_model_gradient_flow.pdf")
+        else:
+            print("Gradient flow plotting function not available.")
